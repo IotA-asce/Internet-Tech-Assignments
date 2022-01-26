@@ -10,7 +10,7 @@ public class ServerMemory {
         /*
         ***************************************
         Constructor for initializing the memory
-        of the server
+        of the server (comment by Nasif)
         ***************************************
         */
 

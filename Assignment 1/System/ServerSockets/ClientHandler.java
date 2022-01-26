@@ -14,6 +14,12 @@ public class ClientHandler extends Thread{
     final DataOutputStream dataOutputStream;
     final Socket socket;
 
+    Integer statusFlag = 0;         /* Indicates type of client 
+                Available Flags :
+                0   =>  normal 
+                1   =>  admin 
+    */
+
     public static ServerMemory serverMemory = new ServerMemory();
 
     public ClientHandler(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) {
@@ -54,8 +60,8 @@ public class ClientHandler extends Thread{
 
                 }
 
-
-                switch (strings[0]) {
+                String command = strings[0].toUpperCase();
+                switch (command) {
                   
                     case "GET" :
                         System.out.println(
@@ -82,7 +88,13 @@ public class ClientHandler extends Thread{
                         );
                         
                         break;
-    
+                    case "DELETE" :
+                        if(statusFlag != 1){
+                            dataOutputStream.writeUTF("Access Denied");
+                        }else{
+                            //Do something
+                        }
+                        break;
                     default:
 
                         dataOutputStream.writeUTF("Invalid input");
