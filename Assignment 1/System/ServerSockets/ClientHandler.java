@@ -13,6 +13,10 @@ public class ClientHandler extends Thread{
     final DataInputStream dataInputStream;
     final DataOutputStream dataOutputStream;
     final Socket socket;
+    final String USERNAME = "admin";
+    final String PASSWORD = "admin";
+
+    private boolean isUsernameCorrect = false;
 
     Integer statusFlag = 0;         /* Indicates type of client 
                 Available Flags :
@@ -81,11 +85,17 @@ public class ClientHandler extends Thread{
                     case "STATUS":
 
                         System.out.println(
-                            serverMemory.MEMORY_STATUS()
+                            serverMemory.MEMORY_STATUS(statusFlag)
                         ); 
                         dataOutputStream.writeUTF(
-                            serverMemory.MEMORY_STATUS()
+                            serverMemory.MEMORY_STATUS(statusFlag)
                         );
+
+
+                        // if(statusFlag == 1){
+                        //     // -----admin previledges-----
+
+                        // }
                         
                         break;
                     case "DELETE" :
@@ -95,6 +105,25 @@ public class ClientHandler extends Thread{
                             //Do something
                         }
                         break;
+                    case "USERNAME":
+                        if(strings[1].equals(USERNAME)){
+                            isUsernameCorrect = true;
+                        }
+                        else{
+                            dataOutputStream.writeUTF("Incorrect Username");
+                        }
+
+                        break;
+                    case "PASSWORD":
+                        if(strings[1].equals(PASSWORD) && isUsernameCorrect){
+                            statusFlag = 1;
+                            dataOutputStream.writeUTF("Admin access granted...");
+                        }
+                        else{
+                            dataOutputStream.writeUTF("Incorrect Password");
+                        }
+
+                        break;                        
                     default:
 
                         dataOutputStream.writeUTF("Invalid input");
