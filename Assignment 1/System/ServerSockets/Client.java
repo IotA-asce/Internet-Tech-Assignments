@@ -54,7 +54,7 @@ public class Client {
                 String tosend = scanner.nextLine();
                 dataOutputStream.writeUTF(tosend);
 
-                if(tosend.equals("Exit")){
+                if(tosend.equals("exit")){
                     System.out.println("Closing this connection : " + socket);
                     socket.close();
                     System.out.println("Connection closed");

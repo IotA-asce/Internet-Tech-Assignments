@@ -1,15 +1,17 @@
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class ServerUtil {
-    public String[] stringTokens(String inpuString){
+    public ArrayList<String> stringTokens(String inpuString){
 
         StringTokenizer stringTokenizer = new StringTokenizer(inpuString, " ");
-        String[] strings = new String[3];
+        ArrayList<String> strings = new ArrayList<>();
         int index = 0;
 
-        while (stringTokenizer.hasMoreTokens() && index<3) {
-            strings[index++] = stringTokenizer.nextToken();
-            System.out.println(strings[index-1]);
+        while (stringTokenizer.hasMoreTokens()) {
+            index++;
+            strings.add( stringTokenizer.nextToken() );
+            System.out.println(strings.get(index-1));
         }
 
         return strings;

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class ClientHandler extends Thread{
 
@@ -38,23 +39,27 @@ public class ClientHandler extends Thread{
     public void run(){
 
         String received;
-        
+        try{
+            dataOutputStream.writeUTF(
+                
+                    "Type in the script...\n"+
+                    "Type exit to terminate connection."
+                );
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
         while (true) {
             
             try {
                 
                 dataOutputStream.writeUTF(
-                
-                    "Type in the script...\n"+
-                    "Type Exit to terminate connection." + 
                     "Script : "
-                
                 );
 
                 received = dataInputStream.readUTF();
-                String[] strings = new ServerUtil().stringTokens(received);
+                ArrayList<String> strings = new ServerUtil().stringTokens(received);
 
-                if(received.equals("Exit")){
+                if(received.equals("exit")){
 
                     System.out.println("Client " + this.socket + " sends exit...");
                     System.out.println("Closing this connection.");
@@ -64,26 +69,40 @@ public class ClientHandler extends Thread{
 
                 }
 
-                String command = strings[0].toUpperCase();
+                String command = strings.get(0).toUpperCase();
+                boolean length_error = false;
                 switch (command) {
                   
                     case "GET" :
+                        if(strings.size() != 2){
+                            dataOutputStream.writeUTF("Error : get accepts 1 argument, => "+strings.size()+" given");
+                            length_error = true;
+                        }
+                        if(length_error) break;
                         System.out.println(
-                            serverMemory.GET(strings[1])
+                            serverMemory.GET(strings.get(1))
                         );
-                        dataOutputStream.writeUTF(serverMemory.GET(strings[1]));
+                        dataOutputStream.writeUTF(serverMemory.GET(strings.get(1)));
                         break;
                           
                     case "PUT" :
-   
-                        String message = serverMemory.PUT(strings[1], strings[2]);
+                        if(strings.size() != 3){
+                            dataOutputStream.writeUTF("Error : put accepts 2 arguments, => "+strings.size()+" given");
+                            length_error = true;
+                        }
+                        if(length_error) break;
+                        String message = serverMemory.PUT(strings.get(1), strings.get(2));
                         
                         System.out.println(message);
                         dataOutputStream.writeUTF(message);
                         break;
     
                     case "STATUS":
-
+                        if(strings.size() != 1){
+                            dataOutputStream.writeUTF("Error : status accepts no arguments, => "+strings.size()+" given");
+                            length_error = true;
+                        }
+                        if(length_error) break;
                         System.out.println(
                             serverMemory.MEMORY_STATUS(statusFlag)
                         ); 
@@ -99,14 +118,19 @@ public class ClientHandler extends Thread{
                         
                         break;
                     case "DELETE" :
+                        if(strings.size() != 2){
+                            dataOutputStream.writeUTF("Error : delete accepts 1 argument, => "+strings.size()+" given");
+                            length_error = true;
+                        }
+                        if(length_error) break;
                         if(statusFlag != 1){
                             dataOutputStream.writeUTF("Access Denied");
                         }else{
-                            //Do something
+                            serverMemory.DELETE(strings.get(1));
                         }
                         break;
                     case "USERNAME":
-                        if(strings[1].equals(USERNAME)){
+                        if(strings.get(1).equals(USERNAME)){
                             isUsernameCorrect = true;
                         }
                         else{
@@ -115,7 +139,8 @@ public class ClientHandler extends Thread{
 
                         break;
                     case "PASSWORD":
-                        if(strings[1].equals(PASSWORD) && isUsernameCorrect){
+                        if(length_error) break;
+                        if(strings.get(1).equals(PASSWORD) && isUsernameCorrect){
                             statusFlag = 1;
                             dataOutputStream.writeUTF("Admin access granted...");
                         }

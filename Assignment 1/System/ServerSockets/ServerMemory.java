@@ -12,7 +12,7 @@ public class ServerMemory {
         /*
         ***************************************
         Constructor for initializing the memory
-        of the server (comment by Nasif)
+        of the server 
         ***************************************
         */
 
@@ -49,7 +49,11 @@ public class ServerMemory {
 
         return status;
     }  
+    public String DELETE(String key){
+        this.keys.remove(key);
+        return pair.containsKey(key) ? this.pair.remove(key): "'KEY NOT FOUND' : exception";
 
+    }
     public String MEMORY_STATUS(Integer statusFlag){
 
         String output = "";
