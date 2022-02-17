@@ -46,7 +46,7 @@ public class ClientHandler extends Thread {
                 dataOutputStream.writeUTF(
                         "Type in the script...\n" +
                                 "Type exit to terminate connection.\n" +
-                                "****************************************\n\n");
+                                "****************************************\n");
 
                 received = dataInputStream.readUTF();
 
@@ -57,6 +57,8 @@ public class ClientHandler extends Thread {
                     System.out.println("Connection closed");
                     break;
                 } else if (received.equals("status")) {
+                    System.out.println("client from port => " + this.socket.getPort() + " query => Status report");
+
                     System.out.println(
                             serverMemory.MEMORY_STATUS(statusFlag));
                     dataOutputStream.writeUTF(
@@ -69,51 +71,58 @@ public class ClientHandler extends Thread {
                     dataOutputStream.writeUTF("\tErrorneous Input");
                     continue;
                 }
-                String responce = "";
+                String responce = "\n";
                 while (!strings.isEmpty()) {
 
                     String command = strings.get(0).toUpperCase();
                     switch (command) {
 
                         case "GET":
+                            System.out.println("client from port => " + this.socket.getPort() + " query => "
+                                    + strings.get(0) + " " + strings.get(1));
+
                             System.out.println(serverMemory.GET(strings.get(1)));
-                            // dataOutputStream.writeUTF(serverMemory.GET(strings.get(1)));
                             responce += serverMemory.GET(strings.get(1)) + "\n";
                             strings.remove(0);
                             strings.remove(0);
                             break;
                         case "PUT":
-                            System.out.println(serverMemory.PUT(strings.get(1), strings.get(2)));
-                            responce += serverMemory.PUT(strings.get(1), strings.get(2)) + "\n";
-                            // dataOutputStream.writeUTF(message);
+                            System.out.println("client from port => " + this.socket.getPort() + " query => "
+                                    + strings.get(0) + " " + strings.get(1) + " " + strings.get(2));
+
+                            String messege = serverMemory.PUT(strings.get(1), strings.get(2));
+                            System.out.println(messege);
+                            responce += messege + "\n";
                             strings.remove(0);
                             strings.remove(0);
                             strings.remove(0);
                             break;
                         case "DELETE":
-                            if (statusFlag != 1) {
-                                // dataOutputStream.writeUTF("\tAccess Denied");
-                                responce += "\tAccess Denied";
-                            } else {
-                                responce += serverMemory.DELETE(strings.get(1)) + "\n";
-                            }
+                            System.out.println("client from port => " + this.socket.getPort() + " query => "
+                                    + strings.get(0) + " " + strings.get(1));
+                            String messege2 = serverMemory.DELETE(strings.get(1), statusFlag);
+                            System.out.println(messege2);
+                            responce += messege2 + "\n";
                             strings.remove(0);
                             strings.remove(0);
                             break;
                         case "PASSWORD":
+                            // System.out.println("client from port => " + this.socket.getPort() + "query => "
+                            //         + strings.get(0) + " " + strings.get(1));
+
                             if (strings.get(1).equals(PASSWORD)) {
                                 statusFlag = 1;
-                                // dataOutputStream.writeUTF("\tAdmin access granted...");
                                 responce += "\tAdmin access granted..." + "\n";
                             } else {
-                                // dataOutputStream.writeUTF("\tIncorrect Password");
                                 responce += "\tIncorrect Password" + "\n";
                             }
                             strings.remove(0);
                             strings.remove(0);
                             break;
                         default:
-                            // dataOutputStream.writeUTF("Invalid input");
+                            System.out.println(
+                                    "client from port => " + this.socket.getPort() + "query => " + strings.get(0));
+
                             responce += "Invalid input\n";
                             break;
 

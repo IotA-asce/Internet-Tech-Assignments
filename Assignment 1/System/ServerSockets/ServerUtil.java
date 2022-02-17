@@ -13,7 +13,6 @@ public class ServerUtil {
         while (stringTokenizer.hasMoreTokens()) {
             index++;
             strings_.add(stringTokenizer.nextToken());
-            // System.out.println(strings_.get(index - 1));
         }
         boolean correct = true;
         for (int i = 0; i < strings_.size() && correct;) {
