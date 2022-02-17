@@ -6,7 +6,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-public class ClientHandler extends Thread{
+public class ClientHandler extends Thread {
 
     DateFormat fordate = new SimpleDateFormat("yyyy/MM/dd");
     DateFormat fortime = new SimpleDateFormat("hh:mm:ss");
@@ -19,16 +19,17 @@ public class ClientHandler extends Thread{
 
     private boolean isUsernameCorrect = false;
 
-    Integer statusFlag = 0;         /* Indicates type of client 
-                Available Flags :
-                0   =>  normal 
-                1   =>  admin 
-    */
+    Integer statusFlag = 0; /*
+                             * Indicates type of client
+                             * Available Flags :
+                             * 0 => normal
+                             * 1 => admin
+                             */
 
     public static ServerMemory serverMemory = new ServerMemory();
 
     public ClientHandler(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) {
-    
+
         this.socket = socket;
         this.dataInputStream = dataInputStream;
         this.dataOutputStream = dataOutputStream;
@@ -36,125 +37,89 @@ public class ClientHandler extends Thread{
     }
 
     @Override
-    public void run(){
+    public void run() {
 
         String received;
-        try{
-            dataOutputStream.writeUTF(
-                
-                    "Type in the script...\n"+
-                    "Type exit to terminate connection."
-                );
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
         while (true) {
-            
+
             try {
-                
                 dataOutputStream.writeUTF(
-                    "Script : "
-                );
+                        "Type in the script...\n" +
+                                "Type exit to terminate connection.\n" +
+                                "****************************************\n\n");
 
                 received = dataInputStream.readUTF();
-                ArrayList<String> strings = new ServerUtil().stringTokens(received);
 
-                if(received.equals("exit")){
-
+                if (received.equals("exit")) {
                     System.out.println("Client " + this.socket + " sends exit...");
                     System.out.println("Closing this connection.");
                     this.socket.close();
                     System.out.println("Connection closed");
                     break;
-
+                } else if (received.equals("status")) {
+                    System.out.println(
+                            serverMemory.MEMORY_STATUS(statusFlag));
+                    dataOutputStream.writeUTF(
+                            serverMemory.MEMORY_STATUS(statusFlag));
+                    continue;
                 }
 
-                String command = strings.get(0).toUpperCase();
-                boolean length_error = false;
-                switch (command) {
-                  
-                    case "GET" :
-                        if(strings.size() != 2){
-                            dataOutputStream.writeUTF("Error : get accepts 1 argument, => "+strings.size()+" given");
-                            length_error = true;
-                        }
-                        if(length_error) break;
-                        System.out.println(
-                            serverMemory.GET(strings.get(1))
-                        );
-                        dataOutputStream.writeUTF(serverMemory.GET(strings.get(1)));
-                        break;
-                          
-                    case "PUT" :
-                        if(strings.size() != 3){
-                            dataOutputStream.writeUTF("Error : put accepts 2 arguments, => "+strings.size()+" given");
-                            length_error = true;
-                        }
-                        if(length_error) break;
-                        String message = serverMemory.PUT(strings.get(1), strings.get(2));
-                        
-                        System.out.println(message);
-                        dataOutputStream.writeUTF(message);
-                        break;
-    
-                    case "STATUS":
-                        if(strings.size() != 1){
-                            dataOutputStream.writeUTF("Error : status accepts no arguments, => "+strings.size()+" given");
-                            length_error = true;
-                        }
-                        if(length_error) break;
-                        System.out.println(
-                            serverMemory.MEMORY_STATUS(statusFlag)
-                        ); 
-                        dataOutputStream.writeUTF(
-                            serverMemory.MEMORY_STATUS(statusFlag)
-                        );
-
-
-                        // if(statusFlag == 1){
-                        //     // -----admin previledges-----
-
-                        // }
-                        
-                        break;
-                    case "DELETE" :
-                        if(strings.size() != 2){
-                            dataOutputStream.writeUTF("Error : delete accepts 1 argument, => "+strings.size()+" given");
-                            length_error = true;
-                        }
-                        if(length_error) break;
-                        if(statusFlag != 1){
-                            dataOutputStream.writeUTF("Access Denied");
-                        }else{
-                            serverMemory.DELETE(strings.get(1));
-                        }
-                        break;
-                    case "USERNAME":
-                        if(strings.get(1).equals(USERNAME)){
-                            isUsernameCorrect = true;
-                        }
-                        else{
-                            dataOutputStream.writeUTF("Incorrect Username");
-                        }
-
-                        break;
-                    case "PASSWORD":
-                        if(length_error) break;
-                        if(strings.get(1).equals(PASSWORD) && isUsernameCorrect){
-                            statusFlag = 1;
-                            dataOutputStream.writeUTF("Admin access granted...");
-                        }
-                        else{
-                            dataOutputStream.writeUTF("Incorrect Password");
-                        }
-
-                        break;                        
-                    default:
-
-                        dataOutputStream.writeUTF("Invalid input");
-                        break;
-                
+                ArrayList<String> strings = new ServerUtil().stringTokens(received);
+                if (strings.isEmpty()) {
+                    dataOutputStream.writeUTF("\tErrorneous Input");
+                    continue;
                 }
+                String responce = "";
+                while (!strings.isEmpty()) {
+
+                    String command = strings.get(0).toUpperCase();
+                    switch (command) {
+
+                        case "GET":
+                            System.out.println(serverMemory.GET(strings.get(1)));
+                            // dataOutputStream.writeUTF(serverMemory.GET(strings.get(1)));
+                            responce += serverMemory.GET(strings.get(1)) + "\n";
+                            strings.remove(0);
+                            strings.remove(0);
+                            break;
+                        case "PUT":
+                            System.out.println(serverMemory.PUT(strings.get(1), strings.get(2)));
+                            responce += serverMemory.PUT(strings.get(1), strings.get(2)) + "\n";
+                            // dataOutputStream.writeUTF(message);
+                            strings.remove(0);
+                            strings.remove(0);
+                            strings.remove(0);
+                            break;
+                        case "DELETE":
+                            if (statusFlag != 1) {
+                                // dataOutputStream.writeUTF("\tAccess Denied");
+                                responce += "\tAccess Denied";
+                            } else {
+                                responce += serverMemory.DELETE(strings.get(1)) + "\n";
+                            }
+                            strings.remove(0);
+                            strings.remove(0);
+                            break;
+                        case "PASSWORD":
+                            if (strings.get(1).equals(PASSWORD)) {
+                                statusFlag = 1;
+                                // dataOutputStream.writeUTF("\tAdmin access granted...");
+                                responce += "\tAdmin access granted..." + "\n";
+                            } else {
+                                // dataOutputStream.writeUTF("\tIncorrect Password");
+                                responce += "\tIncorrect Password" + "\n";
+                            }
+                            strings.remove(0);
+                            strings.remove(0);
+                            break;
+                        default:
+                            // dataOutputStream.writeUTF("Invalid input");
+                            responce += "Invalid input\n";
+                            break;
+
+                    }
+                }
+                dataOutputStream.writeUTF(responce);
 
             } catch (Exception e) {
 
@@ -169,10 +134,10 @@ public class ClientHandler extends Thread{
             this.dataInputStream.close();
             this.dataOutputStream.close();
 
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-    }    
-    
+    }
+
 }

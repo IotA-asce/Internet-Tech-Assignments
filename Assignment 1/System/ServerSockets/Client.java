@@ -18,41 +18,12 @@ public class Client {
             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-            // ask if client is admin
-            System.out.print("Is user admin ? [Y]es/ [N]o : ");
-            String isAdmin = scanner.nextLine();
-            String username = "";
-            String password = "";
-
-            if(isAdmin.equalsIgnoreCase("Y") || isAdmin.equalsIgnoreCase("yes")){
-                
-                System.out.print("username : ");
-                username = scanner.nextLine();
-                String uname = "username " + username;
-                dataOutputStream.writeUTF(uname);
-                String unameStatus = dataInputStream.readUTF();
-                System.out.println(unameStatus);
-
-                if(!unameStatus.equalsIgnoreCase("Incorrect Username")){
-                    System.out.print("password : ");
-                    password = scanner.nextLine();
-                    String pword = "password " + password;
-                    dataOutputStream.writeUTF(pword);
-                    String pwordStatus = dataInputStream.readUTF();
-                    System.out.println(pwordStatus);
-                }
-
-                // send usr name and password to server
-
-
-
-            }
 
             while( true ){
                 
                 System.out.println(dataInputStream.readUTF());
                 String tosend = scanner.nextLine();
-                dataOutputStream.writeUTF(tosend);
+                dataOutputStream.writeUTF(tosend.trim());
 
                 if(tosend.equals("exit")){
                     System.out.println("Closing this connection : " + socket);
